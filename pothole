@@ -1,0 +1,41 @@
+%% DISTURBANCE SIMULATION
+
+% Time Vector
+t = 0:0.01:30;
+
+% Reference Input
+u = ones(size(t));
+
+% Disturbance Signal
+d = zeros(size(t));
+
+% Temporary Disturbance
+% Simulating pothole or speed breaker
+
+d(t >= 10 & t <= 11) = -0.3;
+
+% Total Input Signal
+input_signal = u + d;
+
+%% Simulate Response
+
+[y,t] = lsim(T,input_signal,t);
+
+%% Plot Disturbance Response
+
+figure;
+
+plot(t,y,'LineWidth',2);
+
+hold on;
+
+plot(t,ones(size(t)),'--','LineWidth',1.5);
+
+grid on;
+
+title('Vehicle Speed Response with Pothole Disturbance');
+
+xlabel('Time (seconds)');
+ylabel('Vehicle Speed');
+
+legend('Vehicle Speed','Reference Speed');
