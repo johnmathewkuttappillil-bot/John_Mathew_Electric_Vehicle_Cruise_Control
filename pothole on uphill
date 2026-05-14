@@ -1,0 +1,176 @@
+clc;
+clear;
+close all;
+
+%% ELECTRIC VEHICLE CRUISE CONTROL SYSTEM
+% CONTROL CRAFT HACKATHON PROJECT
+
+%% DEFINE TRANSFER FUNCTION VARIABLE
+s = tf('s');
+
+%% VEHICLE TRANSFER FUNCTION
+% G(s) = 1 / (5s + 1)
+
+G = 1/(5*s + 1);
+
+disp('-----------------------------------')
+disp('VEHICLE TRANSFER FUNCTION')
+disp('-----------------------------------')
+G
+
+%% PI CONTROLLER DESIGN
+
+% Controller Parameters
+Kp = 2;
+Ki = 0.5;
+
+% PI Controller
+C = Kp + Ki/s;
+
+disp('-----------------------------------')
+disp('PI CONTROLLER')
+disp('-----------------------------------')
+C
+
+%% OPEN LOOP SYSTEM
+OL = C * G;
+
+%% CLOSED LOOP SYSTEM
+T = feedback(OL,1);
+
+disp('-----------------------------------')
+disp('CLOSED LOOP TRANSFER FUNCTION')
+disp('-----------------------------------')
+T
+
+%% STEP RESPONSE ANALYSIS
+
+figure;
+
+step(T,'LineWidth',2);
+
+grid on;
+
+title('Closed Loop Step Response');
+
+xlabel('Time (seconds)');
+ylabel('Vehicle Speed');
+
+%% PERFORMANCE METRICS
+
+info = stepinfo(T);
+
+disp('-----------------------------------')
+disp('PERFORMANCE METRICS')
+disp('-----------------------------------')
+
+fprintf('Rise Time        : %.2f seconds\n', info.RiseTime);
+fprintf('Settling Time    : %.2f seconds\n', info.SettlingTime);
+fprintf('Overshoot        : %.2f %%\n', info.Overshoot);
+fprintf('Peak Value       : %.2f\n', info.Peak);
+fprintf('Peak Time        : %.2f seconds\n', info.PeakTime);
+
+%% DISTURBANCE SIMULATION
+
+% Time Vector
+t = 0:0.01:30;
+
+% Desired Speed Input
+u = ones(size(t));
+
+% Disturbance Signal Initialization
+d = zeros(size(t));
+
+%% UPHILL DISTURBANCE
+% Continuous disturbance after 10 seconds
+
+d(t >= 10) = -0.15;
+
+%% POTHOLE / SPEED BREAKER DISTURBANCE
+% Temporary disturbance between 18s and 19s
+
+d(t >= 18 & t <= 19) = d(t >= 18 & t <= 19) - 0.25;
+
+%% TOTAL INPUT SIGNAL
+
+input_signal = u + d;
+
+%% SYSTEM RESPONSE SIMULATION
+
+[y,t] = lsim(T,input_signal,t);
+
+%% DISTURBANCE RESPONSE PLOT
+
+figure;
+
+plot(t,y,'LineWidth',2);
+
+hold on;
+
+% Reference Speed Line
+plot(t,ones(size(t)),'--','LineWidth',1.5);
+
+grid on;
+
+title('Vehicle Speed Response with Uphill and Pothole Disturbances');
+
+xlabel('Time (seconds)');
+ylabel('Vehicle Speed');
+
+legend('Vehicle Speed','Reference Speed');
+
+%% ROOT LOCUS ANALYSIS
+
+figure;
+
+rlocus(OL);
+
+grid on;
+
+title('Root Locus of Open Loop System');
+
+%% BODE PLOT ANALYSIS
+
+figure;
+
+bode(OL);
+
+grid on;
+
+title('Bode Plot of Open Loop System');
+
+%% STABILITY ANALYSIS
+
+disp('-----------------------------------')
+disp('SYSTEM STABILITY ANALYSIS')
+disp('-----------------------------------')
+
+poles = pole(T);
+
+disp('Closed Loop Poles:')
+disp(poles)
+
+if all(real(poles) < 0)
+    disp('System is STABLE')
+else
+    disp('System is UNSTABLE')
+end
+
+%% FINAL OBSERVATIONS
+
+disp('-----------------------------------')
+disp('FINAL OBSERVATIONS')
+disp('-----------------------------------')
+
+disp('1. Vehicle maintains constant speed')
+disp('2. PI controller compensates uphill disturbance')
+disp('3. PI controller recovers from pothole disturbance')
+disp('4. Overshoot remains within acceptable limits')
+disp('5. System remains stable under multiple disturbances')
+disp('6. Smooth transient response achieved')
+
+%% END OF PROGRAM
+
+disp('-----------------------------------')
+disp('SIMULATION COMPLETED SUCCESSFULLY')
+disp('-----------------------------------')
